@@ -68,12 +68,12 @@ namespace NeuralNetworkFreshStart
             return Gradient = sigmoid.derivative(Output) * OutputNeuron.weights.Sum(a => a * OutputNeuron.Gradient);
         }
 
-        //public void adjustWeights()
-        //{
-        //    weights[0] += error * inputs[0];
-        //    weights[1] += error * inputs[1];
-        //    biasWeight += error;
-        //}
+        public void AdjustWeights()
+        {
+            for (int i = 0; i < weights.Count; i++)
+                weights[i] += Gradient * inputs[i];
+            biasWeight += Gradient;
+        }
     }
 
 
