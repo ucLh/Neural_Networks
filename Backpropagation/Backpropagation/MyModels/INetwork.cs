@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkFreshStart
+namespace Backpropagation
 {
     /// <summary>
     ///   Neural network inferface.

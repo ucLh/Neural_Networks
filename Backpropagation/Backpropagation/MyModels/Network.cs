@@ -4,12 +4,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkFreshStart
+namespace Backpropagation
 {
     public class Network : INetwork
     {
         public int InputSize { get; }
-        
+        public List<Neuron> HiddenLayer;
+        public Neuron OutputNeuron;
+        public Network(int[] inputVec)
+        {
+            //XOR case
+            double[] dInput = inputVec.Select(z => (double)z).ToArray();
+            HiddenLayer = new List<Neuron>();
+            HiddenLayer.Add(new Neuron(dInput));
+            HiddenLayer.Add(new Neuron(dInput));
+            OutputNeuron = new Neuron(HiddenLayer);
+        }
 
         public void Configure(int inputSize)
         {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NeuralNetworkFreshStart
+namespace Backpropagation
 {
     class sigmoid
     {
@@ -18,10 +18,11 @@ namespace NeuralNetworkFreshStart
             return x * (1 - x);
         }
     }
-    class Neuron
+    public class Neuron
     {
         public List<double> inputs;
-        public List<double> weights;
+        public List<Synapse> InputSynapses;
+        public List<Synapse> OutputSynapses;
         public double Gradient { get; set; }
 
         private double biasWeight;
@@ -34,25 +35,43 @@ namespace NeuralNetworkFreshStart
             {
                 double wsum = 0;
                 for (int i = 0; i < inputs.Count; i++)
-                   wsum += weights[i] * inputs[i];
+                    wsum += InputSynapses[i].Weight * inputs[i];
                 return wsum += biasWeight;
             }
             set { WeightedSum = value; }
         }
+
         public Neuron(double[] trainingVec)
         {
             inputs = trainingVec.ToList();
-            weights = new List<double>();
+            InputSynapses = new List<Synapse>();
             for (int i = 0; i < trainingVec.Count(); i++)
-                weights.Add(r.NextDouble());
+                InputSynapses.Add(new Synapse(r.NextDouble(), null, this));
             biasWeight = r.NextDouble();
         }
 
         public Neuron(double[] trainingVec, double[] weights, double bias)
         {
             inputs = trainingVec.ToList();
-            this.weights = weights.ToList();
+            InputSynapses = new List<Synapse>();
+            for (int i = 0; i < trainingVec.Count(); i++)
+                InputSynapses.Add(new Synapse(weights[i], null, this));
             biasWeight = bias;
+        }
+
+        public Neuron(List<Neuron> inputNeurons)
+        {
+            inputs = new List<double>();
+            InputSynapses = new List<Synapse>();
+            foreach (var n in inputNeurons)
+            {
+                inputs.Add(n.Output);
+                var synapse = new Synapse(r.NextDouble(), n, this);
+                n.OutputSynapses = new List<Synapse>();
+                n.OutputSynapses.Add(synapse);
+                InputSynapses.Add(synapse);
+            }
+            biasWeight = r.NextDouble();
         }
 
         public double Output
@@ -60,22 +79,19 @@ namespace NeuralNetworkFreshStart
             get { return sigmoid.output(WeightedSum); }
         }
 
-        public double CalculateGradient(Neuron OutputNeuron = null ,double? desiredOutput = null)
+        public double CalculateGradient(Neuron OutputNeuron = null, double? desiredOutput = null)
         {
             if (desiredOutput != null)
                 return Gradient = (desiredOutput.Value - Output) * sigmoid.derivative(Output);
             //надо придумать как лучше получать градиент выходного нейрона
-            return Gradient = sigmoid.derivative(Output) * OutputNeuron.weights.Sum(a => a * OutputNeuron.Gradient);
+            return Gradient = sigmoid.derivative(Output);// * OutputNeuron.InputSynapses.Sum(a => a * OutputNeuron.Gradient);
         }
 
         public void AdjustWeights()
         {
-            for (int i = 0; i < weights.Count; i++)
-                weights[i] += Gradient * inputs[i];
+            for (int i = 0; i < InputSynapses.Count; i++)
+                InputSynapses[i].Weight += Gradient * inputs[i];
             biasWeight += Gradient;
         }
     }
-
-
-
 }
