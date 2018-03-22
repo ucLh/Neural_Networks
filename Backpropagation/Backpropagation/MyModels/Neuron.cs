@@ -27,8 +27,6 @@ namespace Backpropagation
 
         private double biasWeight;
 
-        private Random r = new Random();
-
         public double WeightedSum
         {
             get
@@ -40,14 +38,18 @@ namespace Backpropagation
             }
             set { WeightedSum = value; }
         }
+        public double Output
+        {
+            get { return sigmoid.output(WeightedSum); }
+        }
 
         public Neuron(double[] trainingVec)
         {
             inputs = trainingVec.ToList();
             InputSynapses = new List<Synapse>();
             for (int i = 0; i < trainingVec.Count(); i++)
-                InputSynapses.Add(new Synapse(r.NextDouble(), null, this));
-            biasWeight = r.NextDouble();
+                InputSynapses.Add(new Synapse(Network.r.NextDouble(), null, this));
+            biasWeight = Network.r.NextDouble();
         }
 
         public Neuron(double[] trainingVec, double[] weights, double bias)
@@ -66,25 +68,19 @@ namespace Backpropagation
             foreach (var n in inputNeurons)
             {
                 inputs.Add(n.Output);
-                var synapse = new Synapse(r.NextDouble(), n, this);
+                var synapse = new Synapse(Network.r.NextDouble(), n, this);
                 n.OutputSynapses = new List<Synapse>();
                 n.OutputSynapses.Add(synapse);
                 InputSynapses.Add(synapse);
             }
-            biasWeight = r.NextDouble();
+            biasWeight = Network.r.NextDouble();
         }
 
-        public double Output
-        {
-            get { return sigmoid.output(WeightedSum); }
-        }
-
-        public double CalculateGradient(Neuron OutputNeuron = null, double? desiredOutput = null)
+        public double CalculateGradient(double? desiredOutput = null)
         {
             if (desiredOutput != null)
                 return Gradient = (desiredOutput.Value - Output) * sigmoid.derivative(Output);
-            //надо придумать как лучше получать градиент выходного нейрона
-            return Gradient = sigmoid.derivative(Output);// * OutputNeuron.InputSynapses.Sum(a => a * OutputNeuron.Gradient);
+            return Gradient = sigmoid.derivative(Output)*OutputSynapses.Sum( z => z.OutputNeuron.Gradient *  z.Weight);
         }
 
         public void AdjustWeights()
